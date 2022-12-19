@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "moe_{plugin name}"
+name = "moe_musicbrainz"
 version = "0.1.0"
 description = "Template plugin repository."
-authors = ["{your name} <your email>"]
-documentation = "https://moe-{plugin name}.readthedocs.io/en/latest/"
+authors = ["Jacob Pavlock <jtpavlock@gmail.com>"]
+documentation = "https://moe-musicbrainz.readthedocs.io/en/latest/"
 license = "MIT"
 readme = "README.rst"
 
@@ -39,7 +39,7 @@ pypandoc = "^1.9"
 Sphinx = "^5.2.3"
 
 [tool.poetry.plugins."moe.plugins"]
-"{plugin name}" = "moe_{plugin name}"
+"musicbrainz" = "moe_musicbrainz"
 
 [tool.commitizen]
 name = "cz_customize"

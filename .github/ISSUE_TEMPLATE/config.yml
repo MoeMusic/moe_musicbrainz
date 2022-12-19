@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: 🙇 Need help?
-    url: https://github.com/MoeMusic/{my plugin}/discussions/categories/q-a
+    url: https://github.com/MoeMusic/moe_musicbrainz/discussions/categories/q-a
     about: Ask for help with a Q&A discussion!

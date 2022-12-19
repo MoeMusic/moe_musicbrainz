@@ -16,10 +16,10 @@ import importlib.metadata
 
 # -- Project information -----------------------------------------------------
 
-project = "{repository name}"
-copyright = "2022, {your name}"
-author = "{your name}"
-release = importlib.metadata.version("{repository name}")
+project = "moe_musicbrainz"
+copyright = "2022, Jacob Pavlock"
+author = "Jacob Pavlock"
+release = importlib.metadata.version("moe_musicbrainz")
 
 
 # -- General configuration ---------------------------------------------------
