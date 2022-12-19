@@ -1,0 +1,14 @@
+# codecov configuration
+# https://docs.codecov.io/docs/codecov-yaml
+
+comment:
+  layout: "diff"
+
+# disable CI builds
+coverage:
+  status:
+    project: off
+    patch: off
+
+ignore:
+  "tests"

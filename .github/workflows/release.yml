@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'CHANGELOG.rst'
+
+jobs:
+  github_release:
+    if: contains(github.event.head_commit.message, 'release:')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip commitizen pypandoc
+          sudo apt install pandoc
+
+
+      - name: Get new tag
+        run: |
+          echo "tag=v$(cz version --project)" >> $GITHUB_ENV
+
+      - name: Push new tag
+        run: |
+          git tag ${{ env.tag }}
+          git push origin ${{ env.tag }}
+
+      - name: Get latest changelog
+        run: |
+          echo "changelog<<EOF" >> $GITHUB_ENV
+          python .github/scripts/get_latest_changelog.py ${{ env.tag }} >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Release to GitHub
+        uses: ncipollo/release-action@v1
+        with:
+          name: Release ${{ env.tag }}
+          tag: ${{ env.tag }}
+          body: ${{ env.changelog }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  pypi_release:
+    if: contains(github.event.head_commit.message, 'release:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip poetry
+      - name: Build
+        run: |
+          poetry build
+      - name: Publish to PyPI
+        env:
+          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          poetry publish --username $PYPI_USERNAME --password $PYPI_PASSWORD
