@@ -9,7 +9,7 @@ readme = "README.rst"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-moe = "^1.5.1"
+moe = "^2.0.0"
 
 [tool.poetry.group.test.dependencies]
 debugpy = "^1.4.1"
