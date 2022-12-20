@@ -1,13 +1,4 @@
-"""Core musicbrainz api.
-
-The ``musicbrainz`` core plugin provides the following functionality:
-
-* Imports metadata from musicbrainz when adding a track or album to the library.
-* Optionally updates a musicbrainz collection when items are added or removed from the
-  library.
-
-Note:
-    This plugin is enabled by default.
+"""Core musicbrainz API.
 
 See Also:
     * https://musicbrainz.org/doc/MusicBrainz_API/
