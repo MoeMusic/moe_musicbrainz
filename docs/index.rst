@@ -3,9 +3,9 @@ Musicbrainz
 ###########
 This is a plugin for Moe utilizing the musicbrainz metadata source and provides the following features:
 
- * Musicbrainz as an import souce.
- * Update musicbrainz collections automatically on import or manually.
- * Various API functions.
+* Musicbrainz as an import souce.
+* Update musicbrainz collections automatically on import or manually.
+* Various API functions.
 
 Configuration
 =============
