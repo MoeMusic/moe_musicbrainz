@@ -48,8 +48,8 @@ Album Fields
 ~~~~~~~~~~~~
 * ``mb_album_id`` - musicbrainz album aka release id
 
-Command-line Iterface
-=====================
+Command-line Interface
+======================
 This plugin adds the following commands:
 
 mbcol
