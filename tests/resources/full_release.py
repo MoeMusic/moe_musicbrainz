@@ -1,4 +1,5 @@
 """Musicbrainz release with all the info we normally search for."""
+
 # flake8: noqa
 
 import datetime
@@ -1451,7 +1452,10 @@ release = {
                                             "type": "Legal name",
                                             "alias": "Scott Ramon Seguro Mescudi",
                                         },
-                                        {"sort-name": "キッド・カディ", "alias": "キッド・カディ"},
+                                        {
+                                            "sort-name": "キッド・カディ",
+                                            "alias": "キッド・カディ",
+                                        },
                                     ],
                                     "alias-count": 4,
                                 }

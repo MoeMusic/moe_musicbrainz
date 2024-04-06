@@ -1,4 +1,5 @@
 """Musicbrainz release with multiple discs."""
+
 # flake8: noqa
 
 release = {

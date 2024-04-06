@@ -6,7 +6,6 @@ The ``musicbrainz`` cli plugin provides the following functionality:
 * `mbcol` command to sync a musicbrainz collection with items in the library.
 """
 
-
 import argparse
 import logging
 from typing import Optional
