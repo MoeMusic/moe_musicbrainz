@@ -10,7 +10,7 @@ import logging
 from pathlib import Path
 from typing import Any, Callable, Optional, cast
 
-import dynaconf
+import dynaconf.base
 import mediafile
 import moe
 import musicbrainzngs
