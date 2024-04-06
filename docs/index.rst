@@ -7,8 +7,22 @@ This is a plugin for Moe utilizing the musicbrainz metadata source and provides 
 * Update musicbrainz collections automatically on import or manually.
 * Various API functions.
 
+************
+Installation
+************
+1. Install via pip
+
+   .. code-block:: bash
+
+       $ pip install moe_musicbrainz
+
+*************
 Configuration
-=============
+*************
+Add ``musicbrainz`` to the ``enabled_plugins`` configuration option.
+
+This plugin has the following configuration options:
+
 ``username``
     Musicbrainz username.
 ``password``
@@ -36,8 +50,9 @@ The following options involve auto updating a specific collection on musicbrainz
 ``auto_remove = False``
     Whether to automatically remove releases from ``collection_id`` when removed from the library.
 
+*************
 Custom Fields
-=============
+*************
 This plugin adds the following custom fields:
 
 Track Fields
@@ -48,8 +63,9 @@ Album Fields
 ~~~~~~~~~~~~
 * ``mb_album_id`` - musicbrainz album aka release id
 
+**********************
 Command-line Interface
-======================
+**********************
 This plugin adds the following commands:
 
 mbcol
