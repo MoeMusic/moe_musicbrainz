@@ -6,6 +6,7 @@ See Also:
 """
 
 import datetime
+import importlib.metadata
 import logging
 from pathlib import Path
 from typing import Any, Callable, Optional, cast
@@ -14,7 +15,6 @@ import dynaconf.base
 import mediafile
 import moe
 import musicbrainzngs
-import pkg_resources
 from moe import config
 from moe.library import Album, LibItem, MetaAlbum, MetaTrack, Track
 from moe.moe_import import CandidateAlbum
@@ -44,7 +44,7 @@ class MBAuthError(Exception):
 
 musicbrainzngs.set_useragent(
     "moe",
-    pkg_resources.get_distribution("moe").version,
+    importlib.metadata.version("moe"),
     contact="https://mrmoe.readthedocs.io/en/latest/index.html",
 )
 
