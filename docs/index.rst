@@ -44,10 +44,10 @@ The following options involve auto updating a specific collection on musicbrainz
 ``collection_id``
     Musicbrainz collection to automatically update.
 
-``auto_add = False``
+``auto_add = false``
     Whether to automatically add new releases in the library to the collection defined in ``collection_id``.
 
-``auto_remove = False``
+``auto_remove = false``
     Whether to automatically remove releases from ``collection_id`` when removed from the library.
 
 *************
