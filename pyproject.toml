@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "moe_musicbrainz"
-version = "1.0.0"
+version = "1.0.1"
 description = "Template plugin repository."
 authors = ["Jacob Pavlock <jtpavlock@gmail.com>"]
 documentation = "https://moe-musicbrainz.readthedocs.io/en/latest/"
@@ -43,7 +43,7 @@ Sphinx = "^7.0.0"
 
 [tool.commitizen]
 name = "cz_customize"
-version = "1.0.0"
+version = "1.0.1"
 version_files = [
     "pyproject.toml:^version",
 ]
