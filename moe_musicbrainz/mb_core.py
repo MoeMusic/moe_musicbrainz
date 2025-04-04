@@ -70,7 +70,7 @@ def add_config_validator(settings: dynaconf.base.LazySettings):
     """Validates musicbrainz plugin configuration settings."""
     login_required = False
 
-    settings.validators.register(
+    settings.validators.register(  # type: ignore
         dynaconf.Validator(
             "musicbrainz.collection.auto_add",
             "musicbrainz.collection.auto_remove",
@@ -78,16 +78,18 @@ def add_config_validator(settings: dynaconf.base.LazySettings):
         )
     )
 
-    if settings.get("musicbrainz.collection.auto_add", False) or settings.get(
+    if settings.get(  # type: ignore
+        "musicbrainz.collection.auto_add", False
+    ) or settings.get(  # type: ignore
         "musicbrainz.collection.auto_remove", False
     ):
         login_required = True
-        settings.validators.register(
+        settings.validators.register(  # type: ignore
             dynaconf.Validator("musicbrainz.collection.collection_id", must_exist=True)
         )
 
     if login_required:
-        settings.validators.register(
+        settings.validators.register(  # type: ignore
             dynaconf.Validator(
                 "musicbrainz.username", "musicbrainz.password", must_exist=True
             )
