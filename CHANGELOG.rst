@@ -4,6 +4,16 @@ Changelog
 
 This project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+v1.0.2 (2025-04-04)
+===================
+
+Build Changes
+-------------
+* Support python 3.13 (`c3432f2 <https://github.com/MoeMusic/moe_musicbrainz/commit/c3432f2d42ac345917451f4df02e1d915c37e5ee>`_)
+* Update dependencies (`4d89813 <https://github.com/MoeMusic/moe_musicbrainz/commit/4d8981368f8b7afed98dde9f8f98e1f1a31c0a25>`_)
+
+`Full diff <https://github.com/MoeMusic/moe_musicbrainz/compare/v1.0.1...v1.0.2>`__
+
 v1.0.1 (2025-03-20)
 ===================
 
