@@ -10,11 +10,11 @@ This is a plugin for Moe utilizing the musicbrainz metadata source and provides 
 ************
 Installation
 ************
-1. Install via pip
+1. Install via pipx
 
    .. code-block:: bash
 
-       $ pip install moe_musicbrainz
+       $ pipx inject moe moe_musicbrainz
 
 *************
 Configuration
