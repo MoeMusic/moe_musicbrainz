@@ -455,7 +455,9 @@ def _get_release_date(release: dict) -> Optional[datetime.date]:
 
 def _get_original_date(release: dict) -> Optional[datetime.date]:
     """Gets the original release date from a given musicbrainz release."""
-    return _parse_date(release["release-group"]["first-release-date"])
+    release_group = release.get("release-group", {})
+    first_release_date = release_group.get("first-release-date")
+    return _parse_date(first_release_date)
 
 
 def _parse_date(date: Optional[str]) -> Optional[datetime.date]:

@@ -396,6 +396,34 @@ class TestGetAlbumById:
 
         assert mb_album.catalog_nums == set()
 
+    def test_missing_first_release_date(self, mock_mb_by_id, mb_config):
+        """Handle missing first-release-date field gracefully without KeyError."""
+        mb_album_id = "fe5f8a8e-4992-4e36-a7b6-b0c4c368a9a5"
+        release = copy.deepcopy(mb_rsrc.full_release.release)
+
+        if "first-release-date" in release["release"]["release-group"]:
+            del release["release"]["release-group"]["first-release-date"]
+
+        mock_mb_by_id.return_value = release
+
+        mb_album = moe_mb.get_album_by_id(mb_album_id)
+
+        assert mb_album.original_date is None
+
+    def test_missing_release_group(self, mock_mb_by_id, mb_config):
+        """Handle missing release-group field gracefully without KeyError."""
+        mb_album_id = "fe5f8a8e-4992-4e36-a7b6-b0c4c368a9a5"
+        release = copy.deepcopy(mb_rsrc.full_release.release)
+
+        if "release-group" in release["release"]:
+            del release["release"]["release-group"]
+
+        mock_mb_by_id.return_value = release
+
+        mb_album = moe_mb.get_album_by_id(mb_album_id)
+
+        assert mb_album.original_date is None
+
 
 class TestGetCandidateByID:
     """Test `get_candidate_by_id()`."""
