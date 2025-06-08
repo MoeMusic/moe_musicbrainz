@@ -4,6 +4,15 @@ Changelog
 
 This project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+v1.0.3 (2025-06-08)
+===================
+
+Bug Fixes
+---------
+* Handle missing release-group and first-release-date gracefully (`5eb61d7 <https://github.com/MoeMusic/moe_musicbrainz/commit/5eb61d7507a93eee4adfd2fbd50e9e75fdcd446a>`_)
+
+`Full diff <https://github.com/MoeMusic/moe_musicbrainz/compare/v1.0.2...v1.0.3>`__
+
 v1.0.2 (2025-04-04)
 ===================
 
