@@ -71,6 +71,10 @@ def add_config_validator(settings: dynaconf.base.LazySettings):
     login_required = False
 
     settings.validators.register(  # type: ignore
+        dynaconf.Validator("musicbrainz.search_limit", default=5, gte=1)
+    )
+
+    settings.validators.register(  # type: ignore
         dynaconf.Validator(
             "musicbrainz.collection.auto_add",
             "musicbrainz.collection.auto_remove",
@@ -127,7 +131,8 @@ def get_candidates(album: Album) -> list[CandidateAlbum]:
     if album.track_total:
         search_criteria["tracks"] = album.track_total
 
-    releases = musicbrainzngs.search_releases(limit=5, **search_criteria)
+    search_limit = config.CONFIG.settings.get("musicbrainz.search_limit")
+    releases = musicbrainzngs.search_releases(limit=search_limit, **search_criteria)
 
     candidates = []
     for release in releases["release-list"]:

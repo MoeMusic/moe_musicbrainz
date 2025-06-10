@@ -118,6 +118,37 @@ class TestConfiguration:
                 """
             )
 
+    def test_search_limit_default(self, tmp_config):
+        """The search_limit option should default to 5."""
+        config = tmp_config(settings="default_plugins = ['musicbrainz']")
+
+        assert config.settings.musicbrainz.search_limit == 5
+
+    def test_search_limit_custom_value(self, tmp_config):
+        """The search_limit option should accept custom values."""
+        config = tmp_config(
+            settings="""
+            default_plugins = ['musicbrainz']
+
+            [musicbrainz]
+            search_limit = 10
+            """
+        )
+
+        assert config.settings.musicbrainz.search_limit == 10
+
+    def test_search_limit_invalid_value(self, tmp_config):
+        """The search_limit option should raise an error if set to less than 1."""
+        with pytest.raises(ConfigValidationError):
+            tmp_config(
+                settings="""
+                default_plugins = ['musicbrainz']
+
+                [musicbrainz]
+                search_limit = 0
+                """
+            )
+
 
 class TestGetCandidates:
     """Test the ``get_candidates`` hook implementation."""
@@ -137,6 +168,24 @@ class TestGetCandidates:
         # don't test fields since we can't actually guarantee the accuracy of
         # musicbrainz's search results every time
         assert mb_album
+
+    def test_search_limit_used(self, mb_config):
+        """The search_limit config option should be used when searching musicbrainz."""
+        album = album_factory(title="Test Album", artist="Test Artist")
+        mb_config.settings.musicbrainz.search_limit = 3
+
+        with patch.object(
+            moe_mb.mb_core.musicbrainzngs,
+            "search_releases",
+            autospec=True,
+            return_value={"release-list": []},
+        ) as mock_search, patch.object(
+            moe_mb.mb_core, "get_candidate_by_id", autospec=True
+        ):
+            mb_config.pm.hook.get_candidates(album=album)
+
+        assert mock_search.call_count == 1
+        assert mock_search.call_args.kwargs["limit"] == 3
 
 
 class TestCollectionsAutoRemove:
