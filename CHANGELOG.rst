@@ -4,6 +4,15 @@ Changelog
 
 This project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+v1.1.0 (2025-06-10)
+===================
+
+New Features
+------------
+* Add `search_limit` configuration option (`28ab0ae <https://github.com/MoeMusic/moe_musicbrainz/commit/28ab0aeb0c7791f2ef50e84a803cba9449b9fe4c>`_)
+
+`Full diff <https://github.com/MoeMusic/moe_musicbrainz/compare/v1.0.3...v1.1.0>`__
+
 v1.0.3 (2025-06-08)
 ===================
 
