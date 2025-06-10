@@ -27,6 +27,8 @@ This plugin has the following configuration options:
     Musicbrainz username.
 ``password``
     Musicbrainz password.
+``search_limit = 5``
+    Maximum number of search results to return when searching for candidate albums from MusicBrainz. Must be at least 1. Defaults to 5.
 
 Collections
 ~~~~~~~~~~~
