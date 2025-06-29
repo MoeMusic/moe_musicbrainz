@@ -1,9 +1,6 @@
 """Musicbrainz release with all the info we normally search for."""
 
-# flake8: noqa
-
 import datetime
-from unittest.mock import MagicMock
 
 from moe.library import MetaAlbum, MetaTrack
 

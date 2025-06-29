@@ -1,7 +1,7 @@
 """Test the musicbrainz cli plugin."""
 
+from collections.abc import Iterator
 from types import FunctionType
-from typing import Iterator
 from unittest.mock import ANY, Mock, patch
 
 import moe
@@ -140,20 +140,22 @@ class TestAddImportPromptChoice:
         config.CONFIG.pm.hook.add_candidate_prompt_choice(prompt_choices=prompt_choices)
 
         mock_album = Mock()
-        with patch(
-            "moe_musicbrainz.mb_cli.questionary.text",
-            **{"return_value.ask.return_value": "new id"}
-        ):
-            with patch(
+        with (
+            patch(
+                "moe_musicbrainz.mb_cli.questionary.text",
+                **{"return_value.ask.return_value": "new id"},
+            ),
+            patch(
                 "moe_musicbrainz.mb_cli.moe_musicbrainz.get_candidate_by_id",
                 return_value=mock_album,
                 autospec=True,
-            ) as mock_get_candidate:
-                with patch(
-                    "moe_musicbrainz.mb_cli.moe_import.import_prompt",
-                    autospec=True,
-                ) as mock_prompt:
-                    prompt_choices[0].func(old_album, new_album)
+            ) as mock_get_candidate,
+            patch(
+                "moe_musicbrainz.mb_cli.moe_import.import_prompt",
+                autospec=True,
+            ) as mock_prompt,
+        ):
+            prompt_choices[0].func(old_album, new_album)
 
         mock_get_candidate.assert_called_once_with(old_album, "new id")
         mock_prompt.assert_called_once_with(old_album, mock_album)

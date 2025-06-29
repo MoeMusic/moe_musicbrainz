@@ -122,20 +122,21 @@ class TestConfiguration:
         """The search_limit option should default to 5."""
         config = tmp_config(settings="default_plugins = ['musicbrainz']")
 
-        assert config.settings.musicbrainz.search_limit == 5
+        assert config.settings.musicbrainz.search_limit == 5  # noqa: PLR2004
 
     def test_search_limit_custom_value(self, tmp_config):
         """The search_limit option should accept custom values."""
+        search_limit = 10
         config = tmp_config(
-            settings="""
+            settings=f"""
             default_plugins = ['musicbrainz']
 
             [musicbrainz]
-            search_limit = 10
+            search_limit = {search_limit}
             """
         )
 
-        assert config.settings.musicbrainz.search_limit == 10
+        assert config.settings.musicbrainz.search_limit == search_limit
 
     def test_search_limit_invalid_value(self, tmp_config):
         """The search_limit option should raise an error if set to less than 1."""
@@ -174,18 +175,22 @@ class TestGetCandidates:
         album = album_factory(title="Test Album", artist="Test Artist")
         mb_config.settings.musicbrainz.search_limit = 3
 
-        with patch.object(
-            moe_mb.mb_core.musicbrainzngs,
-            "search_releases",
-            autospec=True,
-            return_value={"release-list": []},
-        ) as mock_search, patch.object(
-            moe_mb.mb_core, "get_candidate_by_id", autospec=True
+        with (
+            patch.object(
+                moe_mb.mb_core.musicbrainzngs,
+                "search_releases",
+                autospec=True,
+                return_value={"release-list": []},
+            ) as mock_search,
+            patch.object(moe_mb.mb_core, "get_candidate_by_id", autospec=True),
         ):
             mb_config.pm.hook.get_candidates(album=album)
 
         assert mock_search.call_count == 1
-        assert mock_search.call_args.kwargs["limit"] == 3
+        assert (
+            mock_search.call_args.kwargs["limit"]
+            == mb_config.settings.musicbrainz.search_limit
+        )
 
 
 class TestCollectionsAutoRemove:
@@ -412,9 +417,9 @@ class TestGetAlbumById:
 
         mb_album = moe_mb.get_album_by_id(mb_album_id)
 
-        assert mb_album.disc_total == 2
+        assert mb_album.disc_total == 2  # noqa: PLR2004
         assert any(track.disc == 1 for track in mb_album.tracks)
-        assert any(track.disc == 2 for track in mb_album.tracks)
+        assert any(track.disc == 2 for track in mb_album.tracks)  # noqa: PLR2004
 
     def test_minimal_release(self, mock_mb_by_id, mb_config):
         """We can properly handle a release with minimal information."""
@@ -575,13 +580,17 @@ class TestAddReleasesToCollection:
 
     def test_set_credentials(self, mb_config):
         """Set the user credentials for use."""
-        with patch.object(
-            moe_mb.mb_core.musicbrainzngs, "add_releases_to_collection", autospec=True
-        ):
-            with patch.object(
+        with (
+            patch.object(
+                moe_mb.mb_core.musicbrainzngs,
+                "add_releases_to_collection",
+                autospec=True,
+            ),
+            patch.object(
                 moe_mb.mb_core.musicbrainzngs, "auth", autospec=True
-            ) as mock_auth_call:
-                moe_mb.add_releases_to_collection({"432"}, "1")
+            ) as mock_auth_call,
+        ):
+            moe_mb.add_releases_to_collection({"432"}, "1")
 
         mock_auth_call.assert_called_once_with(
             mb_config.settings.musicbrainz.username,
@@ -638,15 +647,17 @@ class TestRmReleasesFromCollection:
 
     def test_set_credentials(self, mb_config):
         """Set the user credentials for use."""
-        with patch.object(
-            moe_mb.mb_core.musicbrainzngs,
-            "remove_releases_from_collection",
-            autospec=True,
-        ):
-            with patch.object(
+        with (
+            patch.object(
+                moe_mb.mb_core.musicbrainzngs,
+                "remove_releases_from_collection",
+                autospec=True,
+            ),
+            patch.object(
                 moe_mb.mb_core.musicbrainzngs, "auth", autospec=True
-            ) as mock_auth_call:
-                moe_mb.rm_releases_from_collection(set("123"), "1")
+            ) as mock_auth_call,
+        ):
+            moe_mb.rm_releases_from_collection(set("123"), "1")
 
         mock_auth_call.assert_called_once_with(
             mb_config.settings.musicbrainz.username,
@@ -672,16 +683,16 @@ class TestSetCollection:
         """We are fetching releases from the collection."""
         mb_config.settings.musicbrainz.collection.collection_id = "123"
 
-        with patch.object(
-            moe_mb.mb_core.musicbrainzngs, "get_releases_in_collection", autospec=True
-        ) as mock_get_releases_call:
-            with patch.object(
-                moe_mb.mb_core, "rm_releases_from_collection", autospec=True
-            ):
-                with patch.object(
-                    moe_mb.mb_core, "add_releases_to_collection", autospec=True
-                ):
-                    moe_mb.set_collection({"1"})
+        with (
+            patch.object(
+                moe_mb.mb_core.musicbrainzngs,
+                "get_releases_in_collection",
+                autospec=True,
+            ) as mock_get_releases_call,
+            patch.object(moe_mb.mb_core, "rm_releases_from_collection", autospec=True),
+            patch.object(moe_mb.mb_core, "add_releases_to_collection", autospec=True),
+        ):
+            moe_mb.set_collection({"1"})
 
         mock_get_releases_call.assert_called_once_with(
             collection=mb_config.settings.musicbrainz.collection.collection_id,
@@ -693,19 +704,20 @@ class TestSetCollection:
         """We can fetch all the releases if a collection has > 100 (search limit)."""
         collection = "123"
 
-        with patch.object(
-            moe_mb.mb_core.musicbrainzngs,
-            "get_releases_in_collection",
-            autospec=True,
-            side_effect=[mb_rsrc.create_collection(100), mb_rsrc.create_collection(71)],
-        ) as mock_get_releases_call:
-            with patch.object(
-                moe_mb.mb_core, "rm_releases_from_collection", autospec=True
-            ):
-                with patch.object(
-                    moe_mb.mb_core, "add_releases_to_collection", autospec=True
-                ):
-                    moe_mb.set_collection({"1"}, collection)
+        with (
+            patch.object(
+                moe_mb.mb_core.musicbrainzngs,
+                "get_releases_in_collection",
+                autospec=True,
+                side_effect=[
+                    mb_rsrc.create_collection(100),
+                    mb_rsrc.create_collection(71),
+                ],
+            ) as mock_get_releases_call,
+            patch.object(moe_mb.mb_core, "rm_releases_from_collection", autospec=True),
+            patch.object(moe_mb.mb_core, "add_releases_to_collection", autospec=True),
+        ):
+            moe_mb.set_collection({"1"}, collection)
 
         expected_calls = [
             call(collection=collection, limit=100, offset=0),
@@ -720,19 +732,19 @@ class TestSetCollection:
         collection = mb_rsrc.create_collection(3)
         releases = {"2", "3"}  # 2 already exists, 3 is new
 
-        with patch.object(
-            moe_mb.mb_core.musicbrainzngs,
-            "get_releases_in_collection",
-            autospec=True,
-            return_value=collection,
+        with (
+            patch.object(
+                moe_mb.mb_core.musicbrainzngs,
+                "get_releases_in_collection",
+                autospec=True,
+                return_value=collection,
+            ),
+            patch.object(moe_mb.mb_core, "rm_releases_from_collection", autospec=True),
+            patch.object(
+                moe_mb.mb_core, "add_releases_to_collection", autospec=True
+            ) as mock_add_releases,
         ):
-            with patch.object(
-                moe_mb.mb_core, "rm_releases_from_collection", autospec=True
-            ):
-                with patch.object(
-                    moe_mb.mb_core, "add_releases_to_collection", autospec=True
-                ) as mock_add_releases:
-                    moe_mb.set_collection(releases, collection_id)
+            moe_mb.set_collection(releases, collection_id)
 
         mock_add_releases.assert_called_once_with({"3"}, collection_id)
 
@@ -742,19 +754,19 @@ class TestSetCollection:
         collection = mb_rsrc.create_collection(3)
         releases = {"1", "2"}  # does not include 0
 
-        with patch.object(
-            moe_mb.mb_core.musicbrainzngs,
-            "get_releases_in_collection",
-            autospec=True,
-            return_value=collection,
-        ):
-            with patch.object(
+        with (
+            patch.object(
+                moe_mb.mb_core.musicbrainzngs,
+                "get_releases_in_collection",
+                autospec=True,
+                return_value=collection,
+            ),
+            patch.object(
                 moe_mb.mb_core, "rm_releases_from_collection", autospec=True
-            ) as mock_rm_releases:
-                with patch.object(
-                    moe_mb.mb_core, "add_releases_to_collection", autospec=True
-                ):
-                    moe_mb.set_collection(releases, collection_id)
+            ) as mock_rm_releases,
+            patch.object(moe_mb.mb_core, "add_releases_to_collection", autospec=True),
+        ):
+            moe_mb.set_collection(releases, collection_id)
 
         mock_rm_releases.assert_called_once_with({"0"}, collection_id)
 
@@ -762,16 +774,16 @@ class TestSetCollection:
         """Use the collection in the config if not specified."""
         mb_config.settings.musicbrainz.collection.collection_id = "123"
 
-        with patch.object(
-            moe_mb.mb_core.musicbrainzngs, "get_releases_in_collection", autospec=True
-        ) as mock_set_releases:
-            with patch.object(
-                moe_mb.mb_core, "rm_releases_from_collection", autospec=True
-            ):
-                with patch.object(
-                    moe_mb.mb_core, "add_releases_to_collection", autospec=True
-                ):
-                    moe_mb.set_collection({"89"})
+        with (
+            patch.object(
+                moe_mb.mb_core.musicbrainzngs,
+                "get_releases_in_collection",
+                autospec=True,
+            ) as mock_set_releases,
+            patch.object(moe_mb.mb_core, "rm_releases_from_collection", autospec=True),
+            patch.object(moe_mb.mb_core, "add_releases_to_collection", autospec=True),
+        ):
+            moe_mb.set_collection({"89"})
 
         mock_set_releases.assert_called_once_with(
             collection=mb_config.settings.musicbrainz.collection.collection_id,
@@ -781,19 +793,19 @@ class TestSetCollection:
 
     def test_set_credentials(self, mb_config):
         """Set the user credentials for use."""
-        with patch.object(
-            moe_mb.mb_core.musicbrainzngs, "get_releases_in_collection", autospec=True
+        with (
+            patch.object(
+                moe_mb.mb_core.musicbrainzngs,
+                "get_releases_in_collection",
+                autospec=True,
+            ),
+            patch.object(moe_mb.mb_core, "rm_releases_from_collection", autospec=True),
+            patch.object(moe_mb.mb_core, "add_releases_to_collection", autospec=True),
+            patch.object(
+                moe_mb.mb_core.musicbrainzngs, "auth", autospec=True
+            ) as mock_auth_call,
         ):
-            with patch.object(
-                moe_mb.mb_core, "rm_releases_from_collection", autospec=True
-            ):
-                with patch.object(
-                    moe_mb.mb_core, "add_releases_to_collection", autospec=True
-                ):
-                    with patch.object(
-                        moe_mb.mb_core.musicbrainzngs, "auth", autospec=True
-                    ) as mock_auth_call:
-                        moe_mb.set_collection({"123"}, "1")
+            moe_mb.set_collection({"123"}, "1")
 
         mock_auth_call.assert_called_once_with(
             mb_config.settings.musicbrainz.username,

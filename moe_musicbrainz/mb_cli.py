@@ -8,10 +8,8 @@ The ``musicbrainz`` cli plugin provides the following functionality:
 
 import argparse
 import logging
-from typing import Optional
 
 import moe
-import moe.cli
 import questionary
 from moe import moe_import
 from moe.library import Album, Extra, Track
@@ -26,7 +24,7 @@ log = logging.getLogger("moe.cli.mb")
 
 
 @moe.hookimpl
-def add_command(cmd_parsers: argparse._SubParsersAction):
+def add_command(cmd_parsers: argparse._SubParsersAction) -> None:
     """Adds the ``mbcol`` command to Moe's CLI."""
     mbcol_parser = cmd_parsers.add_parser(
         "mbcol",
@@ -48,7 +46,7 @@ def add_command(cmd_parsers: argparse._SubParsersAction):
     mbcol_parser.set_defaults(func=_parse_args)
 
 
-def _parse_args(session: Session, args: argparse.Namespace):
+def _parse_args(session: Session, args: argparse.Namespace) -> None:
     """Parses the given commandline arguments.
 
     Args:
@@ -62,7 +60,7 @@ def _parse_args(session: Session, args: argparse.Namespace):
 
     releases = set()
     for item in items:
-        release_id: Optional[str] = None
+        release_id: str | None = None
         if isinstance(item, (Extra, Track)):
             release_id = item.album.custom.get("mb_album_id")
         elif isinstance(item, Album):
@@ -84,14 +82,14 @@ def _parse_args(session: Session, args: argparse.Namespace):
 
 
 @moe.hookimpl
-def add_candidate_prompt_choice(prompt_choices: list[PromptChoice]):
+def add_candidate_prompt_choice(prompt_choices: list[PromptChoice]) -> None:
     """Adds a choice to the import prompt to allow specifying a mb id."""
     prompt_choices.append(
         PromptChoice(title="Enter Musicbrainz ID", shortcut_key="m", func=_enter_id)
     )
 
 
-def _enter_id(new_album: Album, candidate: moe_import.CandidateAlbum):
+def _enter_id(new_album: Album, candidate: moe_import.CandidateAlbum) -> None:
     """Re-run the add prompt with the inputted Musibrainz release."""
     mb_id = questionary.text("Enter Musicbrainz ID: ").ask()
 

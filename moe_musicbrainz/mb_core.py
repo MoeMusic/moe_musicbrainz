@@ -5,11 +5,12 @@ See Also:
     * https://python-musicbrainzngs.readthedocs.io/en/latest/api/
 """
 
+from __future__ import annotations
+
 import datetime
 import importlib.metadata
 import logging
-from pathlib import Path
-from typing import Any, Callable, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 import dynaconf.base
 import mediafile
@@ -19,7 +20,11 @@ from moe import config
 from moe.library import Album, LibItem, MetaAlbum, MetaTrack, Track
 from moe.moe_import import CandidateAlbum
 from moe.util.core import match
-from sqlalchemy.orm.session import Session
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from sqlalchemy.orm.session import Session
 
 __all__ = [
     "MBAuthError",
@@ -66,15 +71,15 @@ RELEASE_INCLUDES = [
 
 
 @moe.hookimpl
-def add_config_validator(settings: dynaconf.base.LazySettings):
+def add_config_validator(settings: dynaconf.base.LazySettings) -> None:
     """Validates musicbrainz plugin configuration settings."""
     login_required = False
 
-    settings.validators.register(  # type: ignore
+    settings.validators.register(  # type: ignore[reportCallIssue]
         dynaconf.Validator("musicbrainz.search_limit", default=5, gte=1)
     )
 
-    settings.validators.register(  # type: ignore
+    settings.validators.register(  # type: ignore[reportCallIssue]
         dynaconf.Validator(
             "musicbrainz.collection.auto_add",
             "musicbrainz.collection.auto_remove",
@@ -82,18 +87,16 @@ def add_config_validator(settings: dynaconf.base.LazySettings):
         )
     )
 
-    if settings.get(  # type: ignore
-        "musicbrainz.collection.auto_add", False
-    ) or settings.get(  # type: ignore
+    if settings.get("musicbrainz.collection.auto_add", False) or settings.get(  # type: ignore[reportCallIssue]
         "musicbrainz.collection.auto_remove", False
-    ):
+    ):  # type: ignore[reportCallIssue]
         login_required = True
-        settings.validators.register(  # type: ignore
+        settings.validators.register(  # type: ignore[reportCallIssue]
             dynaconf.Validator("musicbrainz.collection.collection_id", must_exist=True)
         )
 
     if login_required:
-        settings.validators.register(  # type: ignore
+        settings.validators.register(  # type: ignore[reportCallIssue]
             dynaconf.Validator(
                 "musicbrainz.username", "musicbrainz.password", must_exist=True
             )
@@ -134,9 +137,10 @@ def get_candidates(album: Album) -> list[CandidateAlbum]:
     search_limit = config.CONFIG.settings.get("musicbrainz.search_limit")
     releases = musicbrainzngs.search_releases(limit=search_limit, **search_criteria)
 
-    candidates = []
-    for release in releases["release-list"]:
-        candidates.append(get_candidate_by_id(album, release["id"]))
+    candidates = [
+        get_candidate_by_id(album, release["id"])
+        for release in releases["release-list"]
+    ]
 
     if not candidates:
         log.warning("No candidate albums found.")
@@ -147,25 +151,26 @@ def get_candidates(album: Album) -> list[CandidateAlbum]:
 
 
 @moe.hookimpl
-def process_removed_items(session: Session, items: list[LibItem]):
+def process_removed_items(session: Session, items: list[LibItem]) -> None:  # noqa: ARG001
     """Removes a release from a collection when removed from the library."""
     if not config.CONFIG.settings.musicbrainz.collection.auto_remove:
         return
 
-    mb_ids = []
-    for item in items:
-        if isinstance(item, Album) and item.custom.get("mb_album_id"):
-            mb_ids.append(item.custom["mb_album_id"])
+    mb_ids = [
+        item.custom["mb_album_id"]
+        for item in items
+        if isinstance(item, Album) and item.custom.get("mb_album_id")
+    ]
 
     if mb_ids:
         try:
             rm_releases_from_collection(set(mb_ids))
-        except MBAuthError as err:
-            log.error(err)
+        except MBAuthError:
+            log.exception("Error authenticating Musicbrainz")
 
 
 @moe.hookimpl
-def process_new_items(session: Session, items: list[LibItem]):
+def process_new_items(session: Session, items: list[LibItem]) -> None:  # noqa: ARG001
     """Updates a user collection in musicbrainz with new releases."""
     if not config.CONFIG.settings.musicbrainz.collection.auto_add:
         return
@@ -178,8 +183,8 @@ def process_new_items(session: Session, items: list[LibItem]):
     if releases:
         try:
             add_releases_to_collection(releases)
-        except MBAuthError as err:
-            log.error(err)
+        except MBAuthError:
+            log.exception("Error authenticating Musicbrainz.")
 
 
 @moe.hookimpl
@@ -194,12 +199,12 @@ def read_custom_tags(
 
 
 @moe.hookimpl
-def sync_metadata(item: LibItem):
+def sync_metadata(item: LibItem) -> None:
     """Sync musibrainz metadata for associated items."""
     if isinstance(item, Album) and item.custom.get("mb_album_id"):
         item.merge(get_album_by_id(item.custom["mb_album_id"]), overwrite=True)
     elif isinstance(item, Track) and item.custom.get("mb_track_id"):
-        item = cast(Track, item)
+        item = cast("Track", item)
         item.merge(
             get_track_by_id(
                 item.custom["mb_track_id"], item.album.custom["mb_album_id"]
@@ -209,7 +214,7 @@ def sync_metadata(item: LibItem):
 
 
 @moe.hookimpl
-def write_custom_tags(track: Track):
+def write_custom_tags(track: Track) -> None:
     """Write musicbrainz ID fields as tags."""
     audio_file = mediafile.MediaFile(track.path)
 
@@ -220,7 +225,7 @@ def write_custom_tags(track: Track):
 
 
 def add_releases_to_collection(
-    releases: set[str], collection: Optional[str] = None
+    releases: set[str], collection: str | None = None
 ) -> None:
     """Adds releases to a musicbrainz collection.
 
@@ -253,7 +258,7 @@ def add_releases_to_collection(
 
 
 def rm_releases_from_collection(
-    releases: set[str], collection: Optional[str] = None
+    releases: set[str], collection: str | None = None
 ) -> None:
     """Removes releases from a musicbrainz collection.
 
@@ -287,7 +292,7 @@ def rm_releases_from_collection(
     )
 
 
-def _mb_auth_call(api_func: Callable, **kwargs) -> Any:
+def _mb_auth_call(api_func: Callable, **kwargs: object) -> Any:  # noqa: ANN401 musicbrainzngs doesn't have type stubs
     """Call a musicbrainz API function that requires user authentication.
 
     Args:
@@ -308,10 +313,11 @@ def _mb_auth_call(api_func: Callable, **kwargs) -> Any:
     try:
         return api_func(**kwargs)
     except musicbrainzngs.AuthenticationError as err:
-        raise MBAuthError("User authentication with musicbrainz failed.") from err
+        err_msg = "User authentication with musicbrainz failed."
+        raise MBAuthError(err_msg) from err
 
 
-def set_collection(releases: set[str], collection: Optional[str] = None) -> None:
+def set_collection(releases: set[str], collection: str | None = None) -> None:
     """Sets a musicbrainz collection with the given releases.
 
     The releases in the collection will be set to ``releases``, adding any releases not
@@ -330,7 +336,7 @@ def set_collection(releases: set[str], collection: Optional[str] = None) -> None
         collection or config.CONFIG.settings.musicbrainz.collection.collection_id
     )
 
-    log.debug("Setting musicbrainz collection. " f"[{releases=!r}, {collection=!r}]")
+    log.debug(f"Setting musicbrainz collection. [{releases=!r}, {collection=!r}]")
 
     current_releases = []
     num_searches = 0
@@ -342,8 +348,9 @@ def set_collection(releases: set[str], collection: Optional[str] = None) -> None
             limit=limit,
             offset=limit * num_searches,
         )
-        for release in result["collection"]["release-list"]:
-            current_releases.append(release["id"])
+        current_releases.extend(
+            [release["id"] for release in result["collection"]["release-list"]]
+        )
 
         num_searches += 1
     current_releases = set(current_releases)
@@ -449,7 +456,7 @@ def _flatten_artist_credit(artist_credit: list[dict]) -> str:
     return full_artist
 
 
-def _get_release_date(release: dict) -> Optional[datetime.date]:
+def _get_release_date(release: dict) -> datetime.date | None:
     """Gets the release date from a given musicbrainz release."""
     date = release.get("date")
     if date:
@@ -458,14 +465,14 @@ def _get_release_date(release: dict) -> Optional[datetime.date]:
     return _get_original_date(release)
 
 
-def _get_original_date(release: dict) -> Optional[datetime.date]:
+def _get_original_date(release: dict) -> datetime.date | None:
     """Gets the original release date from a given musicbrainz release."""
     release_group = release.get("release-group", {})
     first_release_date = release_group.get("first-release-date")
     return _parse_date(first_release_date)
 
 
-def _parse_date(date: Optional[str]) -> Optional[datetime.date]:
+def _parse_date(date: str | None) -> datetime.date | None:
     """Parses a date from a musicbrainz release."""
     if not date:
         return None
@@ -506,6 +513,7 @@ def get_track_by_id(track_id: str, album_id: str) -> MetaTrack:
             log.info(f"Fetched track from musicbrainz. [{track=!r}]")
             return track
 
-    raise ValueError(
+    err_msg = (
         f"Given track or album id could not be found. [{track_id=!r}, {album_id=!r}]"
     )
+    raise ValueError(err_msg)
