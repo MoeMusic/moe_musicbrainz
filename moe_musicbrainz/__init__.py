@@ -6,18 +6,17 @@ See Also:
 """
 
 import moe
-import pluggy
 from moe import config
 
 from . import mb_cli, mb_core
-from .mb_core import *
+from .mb_core import *  # noqa: F403
 
 __all__ = []
 __all__.extend(mb_core.__all__)
 
 
 @moe.hookimpl
-def plugin_registration():
+def plugin_registration() -> None:
     """Only register the cli sub-plugin if the cli is enabled."""
     config.CONFIG.pm.register(mb_core, "musicbrainz_core")
     if config.CONFIG.pm.has_plugin("cli"):

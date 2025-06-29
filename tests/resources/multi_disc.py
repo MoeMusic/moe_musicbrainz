@@ -1,7 +1,5 @@
 """Musicbrainz release with multiple discs."""
 
-# flake8: noqa
-
 release = {
     "release": {
         "id": "3af9a6ca-c38a-41a7-a53c-32a97e869e8e",

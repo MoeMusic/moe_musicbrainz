@@ -17,7 +17,7 @@ import importlib.metadata
 # -- Project information -----------------------------------------------------
 
 project = "moe_musicbrainz"
-copyright = "2022, Jacob Pavlock"
+copyright = "2022, Jacob Pavlock"  # noqa: A001
 author = "Jacob Pavlock"
 release = importlib.metadata.version("moe_musicbrainz")
 

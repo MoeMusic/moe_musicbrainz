@@ -1,12 +1,15 @@
 """Shared pytest configuration."""
 
+from __future__ import annotations
+
+import contextlib
 import datetime
 import random
 import shutil
 import sys
 import textwrap
 from pathlib import Path
-from typing import Callable, Iterator, Optional
+from typing import TYPE_CHECKING, Callable
 from unittest.mock import MagicMock
 
 import moe.write
@@ -17,6 +20,9 @@ import sqlalchemy.orm
 from moe import config
 from moe.config import Config, ExtraPlugin, moe_sessionmaker
 from moe.library import Album, Extra, Track
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 __all__ = ["album_factory", "extra_factory", "track_factory"]
 
@@ -35,7 +41,7 @@ def pytest_runtest_setup(item):
 
     See Also:
        pytest docs: https://docs.pytest.org/en/latest/example/markers.html#marking-platform-specific-tests-with-pytest
-    """  # noqa: E501
+    """
     platforms = SUPPORTED_PLATFORMS.intersection(
         mark.name for mark in item.iter_markers()
     )
@@ -47,12 +53,12 @@ def pytest_runtest_setup(item):
 @pytest.fixture(autouse=True, scope="session")
 def _tmp_library_path(tmp_path_factory):
     """Creates a temporary music library directory for all test tracks and albums."""
-    global LIBRARY_PATH
+    global LIBRARY_PATH  # noqa: PLW0603
     LIBRARY_PATH = tmp_path_factory.mktemp("music")
 
 
 @pytest.fixture
-def tmp_config(
+def tmp_config(  # noqa: D417 the docstring is for _tmp_config
     tmp_path_factory,
 ) -> Iterator[Callable[[str, bool, bool, list[ExtraPlugin]], Config]]:
     """Instantiates a temporary configuration.
@@ -82,10 +88,10 @@ def tmp_config(
 
     def _tmp_config(
         settings: str = "",
-        init_db: bool = False,
-        tmp_db: bool = False,
-        extra_plugins: Optional[list[ExtraPlugin]] = None,
-        config_dir: Optional[Path] = None,
+        init_db: bool = False,  # noqa: FBT001, FBT002
+        tmp_db: bool = False,  # noqa: FBT001, FBT002
+        extra_plugins: list[ExtraPlugin] | None = None,
+        config_dir: Path | None = None,
     ) -> Config:
         config_dir = config_dir or tmp_path_factory.mktemp("config")
         assert config_dir
@@ -96,7 +102,7 @@ def tmp_config(
         settings_path = config_dir / "config.toml"
         settings_path.write_text(textwrap.dedent(settings))
 
-        engine: Optional[sa.engine.base.Engine]
+        engine: sa.engine.base.Engine | None
         if tmp_db:
             engine = sa.create_engine("sqlite:///:memory:")
             init_db = True
@@ -141,9 +147,9 @@ def _clean_moe():
 
 
 def track_factory(
-    album: Optional[Album] = None,
-    exists: bool = False,
-    dup_track: Optional[Track] = None,
+    album: Album | None = None,
+    exists: bool = False,  # noqa: FBT001, FBT002
+    dup_track: Track | None = None,
     **kwargs,
 ):
     """Creates a track.
@@ -164,10 +170,7 @@ def track_factory(
     title = kwargs.pop("title", "Jazzy Belle")
     disc = kwargs.pop("disc", 1)
 
-    if album.disc_total > 1:
-        disc_dir = f"Disc {disc:02}"
-    else:
-        disc_dir = ""
+    disc_dir = f"Disc {disc:02}" if album.disc_total > 1 else ""
     path = kwargs.pop(
         "path", album.path / disc_dir / f"{disc}.{track_num} - {title}.mp3"
     )
@@ -184,10 +187,8 @@ def track_factory(
     if dup_track:
         for field in dup_track.fields:
             value = getattr(dup_track, field)
-            try:
+            with contextlib.suppress(AttributeError):
                 setattr(track, field, value)
-            except AttributeError:
-                pass
         return track
 
     if exists:
@@ -199,10 +200,10 @@ def track_factory(
 
 
 def extra_factory(
-    album: Optional[Album] = None,
-    path: Optional[Path] = None,
-    exists: bool = False,
-    dup_extra: Optional[Extra] = None,
+    album: Album | None = None,
+    path: Path | None = None,
+    exists: bool = False,  # noqa: FBT001, FBT002
+    dup_extra: Extra | None = None,
     **kwargs,
 ) -> Extra:
     """Creates an extra for testing.
@@ -225,10 +226,8 @@ def extra_factory(
     if dup_extra:
         for field in dup_extra.fields:
             value = getattr(dup_extra, field)
-            try:
+            with contextlib.suppress(AttributeError):
                 setattr(extra, field, value)
-            except AttributeError:
-                pass
         return extra
 
     if exists:
@@ -241,8 +240,8 @@ def album_factory(
     num_tracks: int = 2,
     num_extras: int = 2,
     num_discs: int = 1,
-    exists: bool = False,
-    dup_album: Optional[Album] = None,
+    exists: bool = False,  # noqa: FBT001, FBT002
+    dup_album: Album | None = None,
     **kwargs,
 ) -> Album:
     """Creates an album.
@@ -280,10 +279,8 @@ def album_factory(
         for field in dup_album.fields:
             if field not in ["tracks", "extras"]:
                 value = getattr(dup_album, field)
-                try:
+                with contextlib.suppress(AttributeError):
                     setattr(album, field, value)
-                except AttributeError:
-                    pass
 
         dup_tracks = dup_album.tracks.copy()
         for track in dup_tracks:
